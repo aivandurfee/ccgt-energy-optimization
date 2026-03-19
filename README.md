@@ -1,47 +1,43 @@
 # CCGT Energy Optimization
 
-A Mixed-Integer Linear Programming (MILP) model for optimizing the economic dispatch of a Combined Cycle Gas Turbine (CCGT) power plant in wholesale electricity markets. This project demonstrates production-grade optimization techniques applied to energy analytics—a core competency for ML and analytics roles in power systems and utilities.
+MILP-based optimization for Combined Cycle Gas Turbine (CCGT) economic dispatch in wholesale electricity markets. This project implements two modeling approaches used in different ISO markets—CAISO (configuration-based) and PJM (pseudo-unit)—demonstrating production-grade optimization techniques for energy analytics.
 
 ## Overview
 
-This optimization determines the profit-maximizing operating schedule for a CCGT over a 168-hour horizon (one week), given hourly electricity prices and natural gas costs. The model selects among five operating configurations (OFF, 1 CT, 2 CT, 1x1, 2x1), schedules generation levels, and accounts for startup costs and variable operating expenses.
+The project optimizes profit-maximizing dispatch over a 168-hour horizon (March 21–27, 2022) using hourly NP15 electricity prices and natural gas costs. Two notebooks implement distinct market representations:
 
-**Key capabilities:**
-- Multi-configuration unit commitment with realistic operational constraints
-- Startup logic with proper binary variable formulation
-- Revenue maximization under price uncertainty
-- Automated output generation (CSV, visualizations, summary metrics)
+### CAISO Representation
+Single CCGT modeled with **five operating configurations** (OFF, 1 CT, 2 CT, 1x1, 2x1). The model selects exactly one configuration per hour, with configuration-specific min/max MW, heat rates, VOM, and startup costs. This reflects how CAISO and other western markets often model combined-cycle units.
 
-## Technical Approach
+### PJM Representation
+The same physical CCGT modeled as **two independent pseudo-units** (Base Unit + Incremental Unit), each optimized separately. Unit 1 (57–190 MW) represents the gas turbine; Unit 2 (0–420 MW) represents the steam turbine/incremental capacity. This mirrors PJM’s pseudo-unit bidding structure.
 
-The model is formulated as a MILP and solved using [Gurobi](https://www.gurobi.com/), an industry-standard commercial solver for large-scale optimization. Decision variables include:
+## Project Structure
 
-- **u[c,t]** — Binary: configuration `c` active in hour `t`
-- **p[c,t]** — Continuous: MW generation from configuration `c` in hour `t`
-- **v[c,t]** — Binary: startup event for configuration `c` in hour `t`
-
-Constraints enforce single-configuration operation, generation bounds, and correct startup detection. The objective maximizes profit (revenue minus variable and startup costs).
+| File | Description |
+|------|-------------|
+| `CCGT_with_CAISO_representation.ipynb` | Single-unit MILP with config switching; outputs `CCGT_CAISO.csv` |
+| `CCGT_with_PJM_representation.ipynb` | Two pseudo-units, separate optimizations; outputs `CCGT_PSEUDO.csv` |
+| `Prices.xlsx` | Input: hourly electricity prices (NP15) |
+| `CCGT_CAISO.csv` | Output: CAISO dispatch schedule |
+| `CCGT_PSEUDO.csv` | Output: PJM-style pseudo-unit dispatch |
 
 ## Requirements
 
 - **Python 3.8+**
-- **Gurobi Optimizer** (commercial solver)
-- **Gurobi license** — Required to run the optimization
+- **Gurobi Optimizer** — Required to run the MILP models
 
 ### Gurobi License
 
-This project requires a valid Gurobi license. Gurobi offers:
+A valid Gurobi license is required. Gurobi offers free academic licenses for students and researchers.
 
-- **Academic license** — Free for students, faculty, and researchers at degree-granting institutions
-- **Commercial license** — For industry use
+**Setup:**
+1. Install: `pip install gurobipy`
+2. Obtain a license from [Gurobi](https://www.gurobi.com/downloads/end-user-license-agreement-academic/)
+3. Place `gurobi.lic` in the project root
+4. Notebooks set `GRB_LICENSE_FILE` automatically
 
-**To run this code:**
-1. Install Gurobi: `pip install gurobipy`
-2. Obtain a license from [Gurobi's license center](https://www.gurobi.com/downloads/end-user-license-agreement-academic/)
-3. Place your `gurobi.lic` file in the project root directory
-4. The notebook configures the license path automatically via `GRB_LICENSE_FILE`
-
-> **Note:** The `gurobi.lic` file is excluded from version control (see `.gitignore`) for security and licensing compliance. Users must obtain and place their own license to run the optimization.
+> The `gurobi.lic` file is in `.gitignore` and is not committed. You must add your own license to run the code.
 
 ## Installation
 
@@ -51,29 +47,24 @@ pip install pandas numpy matplotlib openpyxl gurobipy
 
 ## Usage
 
-1. Ensure `Prices.xlsx` is in the project directory (hourly electricity prices with columns: `OPERATING_DATE`, `HOUR_ENDING`, `NP15 ($/MWh)`)
+1. Place `Prices.xlsx` in the project directory (columns: `OPERATING_DATE`, `HOUR_ENDING`, `NP15 ($/MWh)`)
 2. Place your `gurobi.lic` file in the project root
-3. Open `HW2.ipynb` and run all cells in order
+3. Run the desired notebook:
+   - **CAISO:** `CCGT_with_CAISO_representation.ipynb` — run cells for data load, MILP, outputs
+   - **PJM:** `CCGT_with_PJM_representation.ipynb` — run cells for bid curve, data load, MILP, outputs
 
 ## Outputs
 
-The model produces:
+**CAISO notebook:**
+- `CCGT_CAISO.csv` — Hourly schedule (date, hour, price, configuration, MW)
+- Plots: MW and configuration vs time
+- Metrics: Revenue, costs, fuel costs, starts, capacity factor, gross margin
 
-- **CCGT_CAISO.csv** — Hourly dispatch schedule (date, hour, price, configuration, MW)
-- **Plots** — MW generation and configuration over time
-- **Summary metrics** — Total revenue, costs, fuel costs, number of starts, capacity factor, gross margin ($/kW)
-
-## Project Structure
-
-```
-.
-├── README.md
-├── HW2.ipynb          # Main notebook: data loading, MILP, outputs
-├── Prices.xlsx        # Input: hourly electricity prices
-├── CCGT_CAISO.csv     # Output: optimized dispatch schedule
-└── .gitignore
-```
+**PJM notebook:**
+- `CCGT_PSEUDO.csv` — Hourly schedule (date, hour, price, gas price, MW_Unit1, MW_Unit2)
+- Plot: MW vs time for both units
+- Metrics: Per-unit revenue, costs, fuel costs, starts, capacity factor, gross margin
 
 ## License
 
-This project is for educational and portfolio purposes. Gurobi usage is subject to Gurobi's license terms.
+Educational and portfolio use. Gurobi usage is subject to Gurobi’s license terms.
