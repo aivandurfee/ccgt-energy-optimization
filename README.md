@@ -1,6 +1,6 @@
 # CCGT Energy Optimization
 
-MILP-based optimization for Combined Cycle Gas Turbine (CCGT) economic dispatch in wholesale electricity markets. This project implements two modeling approaches used in different ISO markets—CAISO (configuration-based) and PJM (pseudo-unit)—demonstrating production-grade optimization techniques for energy analytics.
+MILP-based optimization for Combined Cycle Gas Turbine (CCGT) economic dispatch in wholesale electricity markets. This project implements two modeling approaches used in different ISO markets—CAISO (configuration-based) and PJM (pseudo-unit)—demonstrating industry-relevant optimization techniques for energy analytics.
 
 ## Overview
 
@@ -11,6 +11,29 @@ Single CCGT modeled with **five operating configurations** (OFF, 1 CT, 2 CT, 1x1
 
 ### PJM Representation
 The same physical CCGT modeled as **two independent pseudo-units** (Base Unit + Incremental Unit), each optimized separately. Unit 1 (57–190 MW) represents the gas turbine; Unit 2 (0–420 MW) represents the steam turbine/incremental capacity. This mirrors PJM’s pseudo-unit bidding structure.
+
+This project highlights how different market representations (multi-configuration vs pseudo-units) can materially impact dispatch efficiency and valuation of power assets.
+
+## Key Results
+
+* **CAISO Model**
+
+  * Capacity Factor: 90.89%
+  * Gross Margin: $2.86/kW
+  * Number of Starts: 9
+
+* **PJM Model**
+
+  * Unit 1 Capacity Factor: 41.67%
+  * Unit 2 Capacity Factor: 85.71%
+  * Demonstrates inefficiency of pseudo-unit representation
+
+* **Spark Spread Approximation**
+
+  * Capacity Factor: 87.5%
+  * Gross Margin: $3,149 per MW
+
+These results highlight how modeling structure significantly impacts dispatch decisions and economic outcomes.
 
 ## Project Structure
 
